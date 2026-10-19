@@ -1,0 +1,4 @@
+interface:
+  display_name: "Контур.Закупки"
+  short_description: "Поиск закупок, избранное, результаты и лимиты API"
+  default_prompt: "Используй $kontur-zakupki для поиска закупок по моим условиям и проверки доступных лимитов."

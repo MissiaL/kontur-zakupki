@@ -1,0 +1,2662 @@
+ {
+  "openapi": "3.0.4",
+  "info": {
+    "title": "АПИ Закупок",
+    "description": "# Описание\r\n\r\nAPI Контур.Закупок позволяет выстроить работу с тендерами в учетной системе (УС).\r\n\r\nAPI Контур.Закупок поможет:\r\n\r\n- Формировать закупочную базу для участия в торгах и поиска клиентов,\r\n\r\n- Избегать ошибок при переносе данных по закупкам в УС,\r\n\r\n- Отслеживать изменения в закупках,\r\n\r\n- Анализировать закупочную деятельность заказчика и победителей.\r\n\r\nМожно работать с API, интегрировав его в учетную систему. Возможна также выгрузка из веб-версии по найденным закупкам.\r\n\r\n## О работе\r\n\r\nСервис Контур.Закупки собирает данные со всех площадок, на которых размещаются тендеры по 44-ФЗ и 223-ФЗ, а также с площадок по коммерческим закупкам.\r\n\r\n- Закупки по 44-ФЗ, 223-ФЗ и 615-ПП получаем из нескольких источников. Тендер попадет в сервис, даже если один из источников недоступен. Дублирования исключаются. Срок подачи заявок в этих закупках более 7 дней. В сервисе 85% подобных тендеров появляются в первые несколько часов после публикации.\r\n\r\n- Коммерческие закупки получаем напрямую с площадок. Срок подачи заявок в этих закупках более 3-х дней. В сервисе 85% из них появляются в первые несколько часов после публикации.\r\n\r\n- Малые закупки получаем напрямую с площадок. Срок подачи заявок у большинства из них — около 2-х часов. В сервисе 85% подобных тендеров появляются в первый час после публикации.\r\n\r\nAPI Контур.Закупок, как и сам сервис, умеет находить тендеры по ключевым словам и ИНН. Тендеры передаются в машиночитаемом виде — в форме поискового запроса.\r\n\r\n### Тарифы и описания\r\n\r\n**Тарифный план «Поиск»** предназначен для поиска закупочных процедур по ключевым словам и ИНН и получения краткой информации по ним с использованием Поискового запроса\r\n\r\n**Поисковый запрос** — это обращение к серверу по типу POST-запросов, где 1 запрос = 1 выдача (страница). На одной странице располагается не более 50 закупок. Чтобы увидеть остальные тендеры, нужно сделать запрос следующих страниц.\r\n\r\nВсем тендерам в сервисе Контур.Закупки присваивается ID — для последующей идентификации и работе с закупками.\r\n\r\n**Тарифный план «Получение закупки»** предназначен для скачивания подробной информации по выбранным закупкам с использованием Базового запроса с ID закупки в нем,\r\n\r\n**Базовый запрос** — это обращение к серверу, где 1 запрос = 1 ответу данных.\r\n\r\n## Доступ к API\r\n\r\nДля работы с API необходим API-ключ. Его нужно передавать в каждом запросе в заголовке X-Kontur-Apikey.\r\n\r\n**API-ключ** — это строка, позволяющая Контуру авторизовать запросы клиента в API продуктов Контура. API-ключи бывают нескольких видов:\r\n\r\n- Активный ключ — это ключ, с помощью которого пользователь может получить доступ к данным.\r\n- Истекающий ключ отличается от активного тем, что у него есть время, по истечении которого он будет автоматически отозван.\r\n- Отозванный ключ — это ключ, которым нельзя воспользоваться, так как срок его действия закончился или его отозвал пользователь.\r\n\r\nТипов ключей также может быть несколько в зависимости от их назначения:\r\n\r\n- Демонстрационный - содержит небольшой набор нетарифицируемых закупок, который необходим для настройки интеграции со стороны ИТ специалиастов.\r\n- Тестовый - дает доступ к полной базе поиска, имеет коротки срок действия и возвращаемые данные будут закрашены, может быть полезен для проверки работы алгоритмов поиска и получения закупки.\r\n- Боевой - дает доступ к методам в соответствии с тарифом и сроками действия тарифа.\r\n\r\nДля выполнения тестовых запросов можно использовать тестовый ключ с закрашенными данными. Либо использовать демонстрационный ключ для проверки экспорта закупок из веб-версии — `  8759e5bf-ecbc-1a25-381d-6b94fecc09e5  `.\r\nТестовый ключ необходимо запросить у менеджера. Механика получения тестового ключа:\r\n\r\n### Выпуск АПИ-ключа\r\n1. Ваш менеджер отправлял вам письмо с приглашением в [Кабинет Интегратора](https://integrations.kontur.ru/). Для входа понадобится авторизация с помощью учетной записи сервиса Контур.Закупки. \r\n   ![](https://disk.skbkontur.ru/index.php/s/7FPjyigYtAE6LD8/download)\r\n3. Зайдите в Кабинет\r\n4. Чтобы выпустить API-ключ, перейдите в то приложение, которое создали для работы с API Контур.Закупок.\r\n   ![](https://disk.skbkontur.ru/index.php/s/j9rLGsBZdE9srPA/download)\r\n5. Кликните на кнопку “Выпустить ключ”.\r\n   ![](https://disk.skbkontur.ru/index.php/s/gDEyx6RrxY7JTdW/download)\r\n6. Откроется окно, в котором будет указан API-ключ. Этот ключ нужно скопировать и сохранить в надежном месте. После закрытия окна снова посмотреть ключ и скопировать его будет невозможно. Если что-то пошло не так, то ключ можно перевыпустить.\r\n   ![](https://disk.skbkontur.ru/index.php/s/e8fNMR8DGJPzjEC/download)\r\n7. После закрытия окна в блоке API-ключи появится созданный ключ.\r\n   ![](https://disk.skbkontur.ru/index.php/s/kHaTHc29WA8Wz4W/download)\r\n\r\n### Перевыпуск ключа\r\nВ некоторых случаях вам может понадобиться перевыпуск ключа:\r\n- ключ был скомпрометирован\r\n- ключ потерян\r\n- ключ не скопировали на этапе выпуска\r\n\r\n1. Нажмите кнопку «Выпустить ключ».\r\n2. Сохраните ключ, отображенный в появившемся окне.\r\n3. Предыдущий активный ключ станет «истекающим» на короткий срок, но вы можете сразу его отозвать, если это необходимо.\r\n   ![](https://disk.skbkontur.ru/index.php/s/SL4A9N6EjpXzPJi/download)\r\n\r\n### Отзыв ключа\r\nОтозвать ключ можно, кликнув на иконке с корзиной\r\n![](https://disk.skbkontur.ru/index.php/s/bYyWHm6DFdWj86X/download)\r\n\r\n**[Подробнее про работу Кабинета интегратора](https://integrations.kontur.ru/documentation)**\r\n\r\nПри возникновении проблем обращайтесь в техническую поддержку сервиса Контур.Закупки.\r\n\r\n# Технические ограничения\r\n\r\n- Количество обращений к серверу ограничено: не более 5 одновременно.\r\n- Количество обращений к серверу для одного ключа определяется выставленным лимитом на каждый метод. При превышении суточного лимита на 1 запрос появится ошибка — счетчик обновится в 00:00 следующих суток.\r\n\r\n\r\n# Полезные ссылки и контакты\r\n\r\n- [Оставить заявку для связи](mailto:zakupki@kontur.ru)\r\n\r\n\r\n- Электронная почта техподдержки [zakupki@kontur.ru](mailto:zakupki@kontur.ru)\r\n- Телефон техподдержки: [8 800 500-06-33](tel:88005000633)",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-zakupki.kontur.ru/"
+    }
+  ],
+  "paths": {
+    "/external/v1/limits": {
+      "get": {
+        "tags": [
+          "Для скачивания закупок",
+          "Для поиска закупок",
+          "Для получения результатов по закупке",
+          "Тестовые методы"
+        ],
+        "summary": "Получение информации о суточном лимите. Метод является устаревшим",
+        "description": "Информация о суточном лимите",
+        "operationId": "v1/limits",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiLimitsModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiLimitsModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiLimitsModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.testmethods, zakupki.api.external.search, zakupki.api.external.base",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/limitGroups": {
+      "get": {
+        "tags": [
+          "Для скачивания закупок",
+          "Для поиска закупок",
+          "Для получения результатов по закупке",
+          "Тестовые методы"
+        ],
+        "summary": "Получение информации о лимитах",
+        "description": "Информация о суточном лимите по группам методов",
+        "operationId": "v1/limitGroups",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalApiLimitModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalApiLimitModel"
+                  }
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExternalApiLimitModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.testmethods, zakupki.api.external.search, zakupki.api.external.base",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/testpurchases/{id}": {
+      "get": {
+        "tags": [
+          "Тестовые методы"
+        ],
+        "summary": "Получение основной информации о закупке",
+        "description": "\r\nПозволяет в тестовом режиме получить данные о закупках. Суточный лимит запросов не учитывается.\r\n\r\nДоступны следующие id закупок:\r\n\r\n - `014020000452100021`\r\n - `0141600001021000268`\r\n - `0151100014819000145`\r\n - `0171200001921003736`\r\n - `0301300335621000492`\r\n - `0303200002521000092`\r\n - `0303200002521000097`\r\n - `0303300084221000013`\r\n - `0321100032519000038`\r\n - `0361300022521000016`\r\n - `0373100041017001070`\r\n - `201250000012100084`\r\n - `2663734`\r\n - `2872426_4`\r\n - `2874802`\r\n - `2875194`\r\n - `2875198`\r\n - `31705796756`\r\n - `31908052099`\r\n - `31908093837`\r\n - `31908146459`\r\n - `D83662006088220000200000`\r\n - `INF_2023910`\r\n - `INF_2025114`\r\n - `IS27091228`\r\n - `OTC85220410`\r\n - `OTC85331200`\r\n - `R1366601691522000072`\r\n - `SBR003-210000758300140`\r\n - `UEM0a74b645-a48e-4f17-b737-e3db241b5d98`\r\n - `202201912000013001000361`\r\n - `005056bc-3797-1edc-afe2-243342401229`\r\n - `202003163000902001000121`\r\n - `005056be-760b-1eeb-a79d-ae87223d9276`\r\n - `202003201000301001000106`\r\n - `2019039130000030010002390002`\r\n - `202103313000561001000161`\r\n - `31705781872`\r\n - `2770929`\r\n - `0134200000114007334`\r\n - `31705283341`\r\n - `31908052999`\r\n - `0118300018719000579`\r\n - `0308200003021000127`\r\n - `0853500000320006022`\r\n - `32110815185`\r\n - `0817200000319000269`\r\n - `0150300005820000089`\r\n - `R3505401169620000006`\r\n - `1435724_4`\r\n - `32110518769`\r\n - `IS28675728`\r\n - `IS28672340`\r\n - `0356300118322000086`\r\n - `32211281804`\r\n - `32211281906`\r\n - `32211282073`\r\n - `32211283009`\r\n - `32211282787`\r\n - `IS28696435`\r\n - `IS28696562`\r\n - `IS28696684`\r\n - `IS28706413`\r\n - `32211286822`\r\n - `0119200000122003021`\r\n - `0169300000322000705`\r\n - `32211288498`\r\n - `IS28722012`\r\n - `32211286657`\r\n - `32211287136`\r\n - `32211286845`\r\n - `IS28732675`\r\n - `IS28724590`\r\n - `IS28729391`\r\n - `0317300301922000403`\r\n - `IS28725961`\r\n - `IS28725999`\r\n - `IS28734661`\r\n - `0319300087522000002`\r\n - `0332200024622000090`\r\n - `0332200006022000002`\r\n - `0332100002722000068`\r\n - `32211289051`\r\n - `32211289883`\r\n - `32211290019`\r\n - `32211292709`\r\n - `IS28757941`\r\n - `0134200000122001694`\r\n - `0342100021522000019`\r\n - `IS28765603`\r\n - `0156600019322000061`\r\n - `OTC88886247`\r\n - `0169300000322000741`\r\n - `0332300171822000007`\r\n - `0334200029222000013`\r\n - `0319300071122000001`\r\n - `IS28789052`\r\n - `IS28789563`\r\n - `IS28790958`\r\n - `IS28790855`\r\n - `IS28793094`\r\n - `IS28794856`\r\n - `0352100007822000024`\r\n - `0815500000522002870`\r\n - `0813500000122004522`\r\n - `0809500000322000813`\r\n - `32211289368`\r\n - `GP329481`\r\n\r\nЗакупки с другими id не будут найдены, для них код ответа `404`.\r\n",
+        "operationId": "v1/testpurchases",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id закупки",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.base, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/purchases/{id}": {
+      "get": {
+        "tags": [
+          "Для скачивания закупок"
+        ],
+        "summary": "Получение основной информации о закупке",
+        "description": "\r\nПолучает основную информацию о закупке по идентификатору. \r\n\r\nВ возвращаемых данных можно найти:\r\n- ссылку на закупку в сервисе Контур.Закупки,\r\n- ЭТП, на которой размещена закупка,\r\n- сроки проведения закупки,\r\n- информацию об объектах закупки и лотах,\r\n- информацию о заказчике и о его требованиях,\r\n- ссылки на документацию\r\n",
+        "operationId": "v1/purchases",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id закупки",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalApiPurchaseModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.base, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/results/{id}": {
+      "get": {
+        "tags": [
+          "Для получения результатов по закупке",
+          "Тестовые методы"
+        ],
+        "summary": "Получение результатов закупки",
+        "description": "\r\nПолучает результаты закупки по её идентификатору.\r\n\r\nВ возвращаемых данных можно найти:\r\n\r\n- Ссылку на протоколы,\r\n- Список участников закупки,\r\n- Цена по контракту,\r\n- Ссылка на контракты,\r\n- Данные поставщика,\r\n- Ссылки на документацию\r\n\r\nПомимо этого позволяет в тестовом режиме получить данные о результатах закупки по её идентификатору. Суточный лимит запросов не учитывается.\r\n\r\nДоступны следующие id закупок:\r\n\r\n - `014020000452100021`\r\n - `0141600001021000268`\r\n - `0151100014819000145`\r\n - `0171200001921003736`\r\n - `0301300335621000492`\r\n - `0303200002521000092`\r\n - `0303200002521000097`\r\n - `0303300084221000013`\r\n - `0321100032519000038`\r\n - `0361300022521000016`\r\n - `0373100041017001070`\r\n - `201250000012100084`\r\n - `2663734`\r\n - `2872426_4`\r\n - `2874802`\r\n - `2875194`\r\n - `2875198`\r\n - `31705796756`\r\n - `31908052099`\r\n - `31908093837`\r\n - `31908146459`\r\n - `D83662006088220000200000`\r\n - `INF_2023910`\r\n - `INF_2025114`\r\n - `IS27091228`\r\n - `OTC85220410`\r\n - `OTC85331200`\r\n - `R1366601691522000072`\r\n - `SBR003-210000758300140`\r\n - `UEM0a74b645-a48e-4f17-b737-e3db241b5d98`\r\n - `202201912000013001000361`\r\n - `005056bc-3797-1edc-afe2-243342401229`\r\n - `202003163000902001000121`\r\n - `005056be-760b-1eeb-a79d-ae87223d9276`\r\n - `202003201000301001000106`\r\n - `2019039130000030010002390002`\r\n - `202103313000561001000161`\r\n - `31705781872`\r\n - `2770929`\r\n - `0134200000114007334`\r\n - `31705283341`\r\n - `31908052999`\r\n - `0118300018719000579`\r\n - `0308200003021000127`\r\n - `0853500000320006022`\r\n - `32110815185`\r\n - `0817200000319000269`\r\n - `0150300005820000089`\r\n - `R3505401169620000006`\r\n - `1435724_4`\r\n - `32110518769`\r\n - `IS28675728`\r\n - `IS28672340`\r\n - `0356300118322000086`\r\n - `32211281804`\r\n - `32211281906`\r\n - `32211282073`\r\n - `32211283009`\r\n - `32211282787`\r\n - `IS28696435`\r\n - `IS28696562`\r\n - `IS28696684`\r\n - `IS28706413`\r\n - `32211286822`\r\n - `0119200000122003021`\r\n - `0169300000322000705`\r\n - `32211288498`\r\n - `IS28722012`\r\n - `32211286657`\r\n - `32211287136`\r\n - `32211286845`\r\n - `IS28732675`\r\n - `IS28724590`\r\n - `IS28729391`\r\n - `0317300301922000403`\r\n - `IS28725961`\r\n - `IS28725999`\r\n - `IS28734661`\r\n - `0319300087522000002`\r\n - `0332200024622000090`\r\n - `0332200006022000002`\r\n - `0332100002722000068`\r\n - `32211289051`\r\n - `32211289883`\r\n - `32211290019`\r\n - `32211292709`\r\n - `IS28757941`\r\n - `0134200000122001694`\r\n - `0342100021522000019`\r\n - `IS28765603`\r\n - `0156600019322000061`\r\n - `OTC88886247`\r\n - `0169300000322000741`\r\n - `0332300171822000007`\r\n - `0334200029222000013`\r\n - `0319300071122000001`\r\n - `IS28789052`\r\n - `IS28789563`\r\n - `IS28790958`\r\n - `IS28790855`\r\n - `IS28793094`\r\n - `IS28794856`\r\n - `0352100007822000024`\r\n - `0815500000522002870`\r\n - `0813500000122004522`\r\n - `0809500000322000813`\r\n - `32211289368`\r\n - `GP329481`\r\n\r\nЗакупки с другими id не будут найдены, для них код ответа `404`.\r\n",
+        "operationId": "v1/results",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID закупки",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseResults"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseResults"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.results, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/search": {
+      "post": {
+        "tags": [
+          "Для поиска закупок"
+        ],
+        "summary": "Поиск закупок",
+        "description": "\r\nИщет закупки в сервисе по параметрам из запроса.\r\n\r\nЗапрос должен обязательно содержать диапазон дат, за которые нужно выдать закупки. \r\n\r\nВ поле regionIds необходимо указывать идентификаторы регионов. Найти идентификатор можно по названию региона с помощью [поиска идентификатора региона](https://zakupki.kontur.ru/Region/Catalog).\r\n\r\nПри предоставлении демонстрационного ключа поиск осуществляется по закупкам из [поиска](https://zakupki.kontur.ru/grid/search?searchId=8ee8e43d-0222-4805-aa95-49d8d368d8bd&amp;utm_source=zakupki&amp;utm_medium=referal&amp;utm_campaign=save_grid). Диапазон поиска закупок на демонстрационном ключе с 04.04.2022 по 08.04.2022.\r\n\r\nВыдача осуществляется постранично, на одну страницу приходится 50 закупок. На один диапазон дат возможно получить не более 10000 закупок.\r\n",
+        "operationId": "v1/search",
+        "requestBody": {
+          "description": "Параметры поискового запроса",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalApiSearchArgs"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalApiSearchArgs"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalApiSearchArgs"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalApiSearchArgs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultItemPagingModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultItemPagingModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultItemPagingModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.search, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/testfavorites": {
+      "get": {
+        "tags": [
+          "Тестовые методы"
+        ],
+        "summary": "Получение избранного",
+        "description": "\r\nТестовый метод получения избранного в диапазоне дат.\r\n\r\nТестовые данные начинаются от 2020-01-01 10:00:01Z.\r\n\r\nВыдача осуществляется постранично, на одну страницу приходится 50 закупок.\r\n",
+        "operationId": "v1/testfavorites",
+        "parameters": [
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "description": "Брать закупки, добавленные после этого времени (включительно)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "description": "Брать закупки, добавленные до этого времени (не включая)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "markersNames",
+            "in": "query",
+            "description": "Список названий меток, по которым пользователь хочет получать избранные закупки. Не более 100 названий\n            \nЕсли не указан - в ответе будут все избранные закупки, добавленные в указанный период, в т.ч. на которых есть только Ответственный",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Номер требуемой страницы (счет от 0)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.base, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/favorites": {
+      "get": {
+        "tags": [
+          "Для скачивания закупок"
+        ],
+        "summary": "Получение избранного",
+        "description": "\r\nВыдача осуществляется постранично, на одну страницу приходится 50 закупок.\r\n",
+        "operationId": "v1/favorites",
+        "parameters": [
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "description": "Брать закупки, добавленные в избранное после этого времени (включительно)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "description": "Брать закупки, добавленные в избранное до этого времени (не включая)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "markersNames",
+            "in": "query",
+            "description": "Список названий меток, по которым пользователь хочет получать избранные закупки. Не более 100 названий\n\nЕсли не указан - в ответе будут все избранные закупки, добавленные в указанный период, в т.ч. на которых есть только Ответственный",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Номер требуемой страницы (счет от 0)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Порядок сортировки избранных закупок.\n            \nПо умолчанию сортировка по окончанию подачи заявок: от срочных",
+            "schema": {
+              "$ref": "#/components/schemas/ApiFavSortOrder"
+            },
+            "x-enum-varnames": [
+              "IndexedDateDesc",
+              "IndexedDateAsc",
+              "ApplicationDeadlineAsc",
+              "ApplicationDeadlineDesc",
+              "MaxPriceAsc",
+              "MaxPriceDesc",
+              "NotificationPublishDateAsc",
+              "NotificationPublishDateDesc"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoritesApiModelPagingModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.favorites, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    },
+    "/external/v1/markers": {
+      "get": {
+        "tags": [
+          "Для скачивания закупок"
+        ],
+        "summary": "Получение имён меток",
+        "description": "\r\nМетод предназначен для получения всех меток пользователя. При предоставления демонстрационного ключа будет отдан фиксированный набор меток: (Интересно, Участвую, Выиграл, Проиграл, Анализ).\r\n",
+        "operationId": "v1/markers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkerApiModelPagingModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkerApiModelPagingModel"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkerApiModelPagingModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        },
+        "security": [
+          {
+            "PortalApiKey": [
+              "Policy:",
+              "Roles:zakupki.api.external.favorites, zakupki.api.external.testmethods",
+              "AuthenticationSchemes:PortalApiKey"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddRequirement": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddRestriction": {
+        "type": "object",
+        "properties": {
+          "RequirementTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "NpaName": {
+            "type": "string",
+            "nullable": true
+          },
+          "Note": {
+            "type": "string",
+            "nullable": true
+          },
+          "ImpossibilityBanReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiAttachmentModel": {
+        "type": "object",
+        "properties": {
+          "FileName": {
+            "type": "string",
+            "description": "Имя файла",
+            "nullable": true
+          },
+          "Url": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на файл",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на файл",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiContactPerson": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Email": {
+            "type": "string",
+            "nullable": true
+          },
+          "Phone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiFavSortOrder": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "IndexedDateDesc",
+          "IndexedDateAsc",
+          "ApplicationDeadlineAsc",
+          "ApplicationDeadlineDesc",
+          "MaxPriceAsc",
+          "MaxPriceDesc",
+          "NotificationPublishDateAsc",
+          "NotificationPublishDateDesc"
+        ],
+        "description": "0 - По дате публикации (от новых)\n\n1 - По дате публикации (от старых)\n\n2 - По окончанию срока подачи заявок (от срочных)\n\n3 - По окончанию срока подачи заявок (от несрочных)\n\n4 - По НМЦ (по возрастанию)\n\n5 - По НМЦ (по убыванию)\n\n6 - По дате планируемой публикации (по возрастанию)\n\n7 - По дате планируемой публикации (по убыванию)\n\n"
+      },
+      "ApiOrganizationModelBase": {
+        "type": "object",
+        "properties": {
+          "Inn": {
+            "type": "string",
+            "description": "ИНН",
+            "nullable": true
+          },
+          "Kpp": {
+            "type": "string",
+            "description": "КПП",
+            "nullable": true
+          },
+          "Name": {
+            "type": "string",
+            "description": "Имя организации",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiPriceModel": {
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "RubPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "CurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "Nds": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiReferenceModel": {
+        "type": "object",
+        "properties": {
+          "Code": {
+            "type": "string",
+            "description": "Код",
+            "nullable": true
+          },
+          "Name": {
+            "type": "string",
+            "description": "Расшифровка",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiSearchCategory": {
+        "type": "integer",
+        "format": "int32",
+        "description": "1 - Овощи и фрукты\n\n2 - Мясо и рыба\n\n3 - Молочные продукты и яйца\n\n4 - Хлебобулочные изделия\n\n5 - Мука, крупы, бакалея\n\n6 - Прочее\n\n8 - Фармацевтика\n\n9 - Аппаратура медицинская\n\n10 - Услуги\n\n12 - Электронно-вычислительная техника\n\n13 - Программное обеспечение\n\n14 - Компьютерные услуги\n\n16 - Автомобили\n\n17 - Ремонт и техническое обслуживание\n\n18 - Принадлежности\n\n20 - Строительные работы\n\n21 - Проектирование\n\n22 - Оборудование и материалы\n\n24 - Гостиницы и рестораны\n\n25 - Транспортные услуги\n\n27 - Банковские услуги\n\n28 - Страхование\n\n29 - Недвижимость\n\n30 - Охрана\n\n31 - Образовательные услуги\n\n32 - Наука и исследования\n\n33 - Прочее\n\n35 - Текстильные изделия, ткани\n\n36 - Обувь, одежда, изделия\n\n38 - Машины и оборудование\n\n39 - Электрооборудование\n\n40 - Обслуживание и ремонт\n\n41 - Прочее\n\n43 - Полиграфическая и печатная продукция\n\n44 - Бумага, канцтовары, офисное оборудование\n\n45 - Мебель\n\n46 - Коммунальные услуги\n\n47 - Напитки\n\n48 - Прочие виды транспорта\n\n50 - Почтовые услуги\n\n51 - Курьерские услуги\n\n52 - Услуги электросвязи\n\n53 - Энергетика\n\n54 - Топливо\n\n56 - Продажа объектов электроэнергетики\n\n57 - Реализация имущества должников\n\n58 - Рыболовство\n\n59 - Пользование участками недр\n\n60 - Водопользование\n\n61 - Размещение рекламных конструкций\n\n62 - Продажа имущества\n\n63 - Аренда и продажа лесных участков\n\n64 - Аренда имущества\n\n65 - Охотхозяйственные соглашения\n\n66 - Государственно-частное партнерство\n\n67 - ЖКХ\n\n68 - Строительство\n\n69 - Аренда и продажа земельных участков\n\n"
+      },
+      "ApiSearchCustomer": {
+        "type": "object",
+        "properties": {
+          "FullName": {
+            "type": "string",
+            "description": "Имя организации",
+            "nullable": true
+          },
+          "Inn": {
+            "type": "string",
+            "description": "ИНН",
+            "nullable": true
+          },
+          "Kpp": {
+            "type": "string",
+            "description": "КПП",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiSearchLaw": {
+        "enum": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          9
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "Fz44",
+          "Fz223",
+          "Commercial",
+          "Fz615",
+          "CommercialNew",
+          "SmallPurchases"
+        ],
+        "description": "1 - 44-ФЗ\n\n2 - 223-ФЗ\n\n3 - Коммерческие и малые закупки\n\n5 - 615 ПП\n\n8 - Коммерческие\n\n9 - Малые закупки\n\n"
+      },
+      "ApiSearchParticipant": {
+        "type": "object",
+        "properties": {
+          "Inn": {
+            "type": "string",
+            "description": "ИНН участника",
+            "nullable": true
+          },
+          "FullName": {
+            "type": "string",
+            "description": "Название организации участника",
+            "nullable": true
+          },
+          "IsWinner": {
+            "type": "boolean",
+            "description": "Участник победил",
+            "nullable": true
+          },
+          "IsContractor": {
+            "type": "boolean",
+            "description": "Поставщик",
+            "nullable": true
+          },
+          "FoundFromDocuments": {
+            "type": "boolean",
+            "description": "ИНН найден в документации к закупке",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiSearchParticipantsState": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "Winner",
+          "Contractor",
+          "All"
+        ],
+        "description": "Статус участника (Доступно для тарифа \"Поиск 2.0\")\n\n1 - Победитель\n\n2 - Поставщик\n\n3 - Все участники\n\n"
+      },
+      "ApiSearchProcedure": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          99
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "AE",
+          "ZK",
+          "EP",
+          "K",
+          "ZMC",
+          "Others"
+        ],
+        "description": "0 - Электронный аукцион\n\n1 - Запрос котировок\n\n2 - Закупка у единственного поставщика\n\n3 - Конкурс\n\n5 - Запрос или мониторинг цен\n\n99 - Другие способы\n\n"
+      },
+      "ApiSearchPurchaseStatus": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "ApplicationSubmission",
+          "CommissionWork",
+          "Finish",
+          "Planned",
+          "Cancelled",
+          "ContainsLotWithoutAdmittedApp"
+        ],
+        "description": "1 - Подача заявок\n\n2 - Работа комиссии\n\n3 - Завершены\n\n4 - Планируются\n\n5 - Отменены\n\n6 - Только несостоявшиеся\n\n"
+      },
+      "ApiSearchSmp": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "All",
+          "Only",
+          "No"
+        ],
+        "description": "0 - Не учитывать\n\n1 - СМП\n\n2 - Без СМП\n\n"
+      },
+      "BlurredApiSchema": {
+        "type": "string",
+        "description": "Значение скрыто (например, \"#####\")",
+        "nullable": true,
+        "example": "#####"
+      },
+      "CharacteristicValuesModel": {
+        "type": "object",
+        "properties": {
+          "Value": {
+            "type": "string",
+            "description": "Значение характеристики",
+            "nullable": true
+          },
+          "Okei": {
+            "type": "string",
+            "description": "Единица измерения характеристики",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CharacteristicsModel": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Наименование характеристики",
+            "nullable": true
+          },
+          "Values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CharacteristicValuesModel"
+            },
+            "description": "Значения характеристики",
+            "nullable": true
+          },
+          "FillingInstruction": {
+            "type": "string",
+            "description": "Инструкция по заполнению",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Contract": {
+        "type": "object",
+        "properties": {
+          "EisContractLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на контракт в ЕИС",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на контракт в ЕИС",
+            "nullable": true
+          },
+          "ContractSignDate": {
+            "type": "string",
+            "description": "Дата подписания контракта",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ContractNumber": {
+            "type": "string",
+            "description": "Номер контракта",
+            "nullable": true
+          },
+          "ContractType": {
+            "type": "string",
+            "description": "Тип контракта",
+            "nullable": true
+          },
+          "FinalPrice": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Итоговая цена по контракту",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Итоговая цена по контракту",
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "description": "Валюта",
+            "nullable": true
+          },
+          "ContractStage": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ContractStage"
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ]
+          },
+          "Products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "description": "Объект закупки",
+            "nullable": true
+          },
+          "Docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiAttachmentModel"
+            },
+            "description": "Документы",
+            "nullable": true
+          },
+          "Customer": {
+            "$ref": "#/components/schemas/ApiOrganizationModelBase"
+          },
+          "Supplier": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Supplier"
+            },
+            "description": "Поставщик",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContractProject": {
+        "type": "object",
+        "properties": {
+          "ProjectNumber": {
+            "type": "string",
+            "description": "Номер",
+            "nullable": true
+          },
+          "ProjectType": {
+            "type": "string",
+            "description": "Тип проекта",
+            "nullable": true
+          },
+          "ProjectPublishDate": {
+            "type": "string",
+            "description": "Дата публикации",
+            "format": "date-time",
+            "nullable": true
+          },
+          "EisProjectLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на проект в ЭТП",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на проект в ЭТП",
+            "nullable": true
+          },
+          "ProjectPrice": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Цена по проекту",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Цена по проекту",
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "description": "Валюта",
+            "nullable": true
+          },
+          "Customer": {
+            "$ref": "#/components/schemas/ApiOrganizationModelBase"
+          },
+          "Supplier": {
+            "$ref": "#/components/schemas/ApiOrganizationModelBase"
+          },
+          "Docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiAttachmentModel"
+            },
+            "description": "Документы",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContractStage": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32",
+        "x-enum-varnames": [
+          "Executing",
+          "ExecutionCompleted",
+          "ExecutionTerminated",
+          "EndExecutionDatePassed",
+          "Invalidated"
+        ],
+        "description": "0 - Executing\n\n1 - ExecutionCompleted\n\n2 - ExecutionTerminated\n\n3 - EndExecutionDatePassed\n\n4 - Invalidated\n\n"
+      },
+      "DrugDeliveryOptionsModel": {
+        "type": "object",
+        "properties": {
+          "IsBasic": {
+            "type": "boolean",
+            "description": "Основной вариант поставки"
+          },
+          "Okdp2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "ОКПД2 коды",
+            "nullable": true
+          },
+          "Ktrus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "КТРУ коды",
+            "nullable": true
+          },
+          "MedicamentalFormName": {
+            "type": "string",
+            "description": "Лекарственная форма",
+            "nullable": true
+          },
+          "DosageGRLSValue": {
+            "type": "string",
+            "description": "Дозировка",
+            "nullable": true
+          },
+          "Quantity": {
+            "type": "number",
+            "description": "Количество",
+            "format": "double",
+            "nullable": true
+          },
+          "Okei": {
+            "type": "string",
+            "description": "Единица измерения",
+            "nullable": true
+          },
+          "ItemPrice": {
+            "type": "number",
+            "description": "Цена за единицу",
+            "format": "double",
+            "nullable": true
+          },
+          "PackagingQuantity": {
+            "type": "number",
+            "description": "Кол-во единиц в первичной упаковке",
+            "format": "double",
+            "nullable": true
+          },
+          "SummaryPackagingQuantity": {
+            "type": "number",
+            "description": "Количество единиц в потребительской упаковке",
+            "format": "double",
+            "nullable": true
+          },
+          "LimitPrice": {
+            "type": "number",
+            "description": "Предельно отпускная цена за ед.",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DrugInfoModel": {
+        "type": "object",
+        "properties": {
+          "TradeName": {
+            "type": "string",
+            "description": "Торговое наименование препарата",
+            "nullable": true
+          },
+          "IsZNVLP": {
+            "type": "boolean",
+            "description": "Включено в перечень жизненно необходимых и важнейших лекарственных препаратов",
+            "nullable": true
+          },
+          "SpecifyDrugPackageReason": {
+            "type": "string",
+            "description": "Обоснование необходимости указания сведений об упаковке лекарственного средства",
+            "nullable": true
+          },
+          "DrugDeliveryOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DrugDeliveryOptionsModel"
+            },
+            "description": "Сведения о вариантах поставки",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiCustomerRequirements": {
+        "type": "object",
+        "properties": {
+          "DelieryPlace": {
+            "type": "string",
+            "description": "Место поставки",
+            "nullable": true,
+            "deprecated": true
+          },
+          "DeliveryPlaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Коллекция мест поставок",
+            "nullable": true
+          },
+          "ApplicationGuarantee": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Размер обеспечения заявки",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Размер обеспечения заявки",
+            "nullable": true
+          },
+          "ContractGuarantee": {
+            "$ref": "#/components/schemas/ExternalApiPayInfo"
+          },
+          "DeliveryGuarantee": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExternalApiPayInfo"
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ]
+          },
+          "ServiceGuarantee": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExternalApiPayInfo"
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ]
+          },
+          "ProvisionWarranty": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Размер обеспечения гарантийных обязательств",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Размер обеспечения гарантийных обязательств",
+            "nullable": true
+          },
+          "AdvancePayment": {
+            "type": "number",
+            "description": "Аванс в процентах",
+            "format": "double",
+            "nullable": true
+          },
+          "SupportContractRequirement": {
+            "type": "string",
+            "description": "Информация о банковском и/или казначейском сопровождении контракта",
+            "nullable": true
+          },
+          "TypeSupportContract": {
+            "type": "string",
+            "description": "Тип сопровождения контракта",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiInitialSum": {
+        "type": "object",
+        "properties": {
+          "Price": {
+            "type": "number",
+            "description": "НМЦ закупки",
+            "format": "double",
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "description": "Валюта",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiLimitModel": {
+        "type": "object",
+        "properties": {
+          "LimitGroup": {
+            "type": "string",
+            "description": "Группа лимитов, характеризует методы, доступные пользователю `purchase`, `search`, `favorites`, `results`",
+            "nullable": true
+          },
+          "Modifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LimitModifiers"
+            },
+            "description": "Модификаторы группы лимитов",
+            "nullable": true
+          },
+          "AvailableRequests": {
+            "type": "integer",
+            "description": "Число доступных запросов пользователя (если IsPeriodic - true в день, иначе на срок поставки АПИ КЗ)",
+            "format": "int32"
+          },
+          "TotalLimit": {
+            "type": "integer",
+            "description": "Общий лимит запросов (если IsPeriodic - true в день, иначе на срок поставки АПИ КЗ)",
+            "format": "int32"
+          },
+          "IsPeriodic": {
+            "type": "boolean",
+            "description": "Показывает является ли лимит периодическим"
+          },
+          "SubscriptionStart": {
+            "type": "string",
+            "description": "Дата (UTC) с которой начинает действовать лимит",
+            "format": "date-time"
+          },
+          "SubscriptionEnd": {
+            "type": "string",
+            "description": "Дата (UTC) по которую действует лимит",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Информация о лимите"
+      },
+      "ExternalApiLimitsModel": {
+        "type": "object",
+        "properties": {
+          "AvailableRequests": {
+            "type": "integer",
+            "description": "Доступное число запросов в день",
+            "format": "int32"
+          },
+          "DayLimit": {
+            "type": "integer",
+            "description": "Лимит запросов в день",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Информация о лимите"
+      },
+      "ExternalApiLotModel": {
+        "type": "object",
+        "properties": {
+          "Title": {
+            "type": "string",
+            "description": "Наименование лота",
+            "nullable": true
+          },
+          "Price": {
+            "$ref": "#/components/schemas/ApiPriceModel"
+          },
+          "Okdp2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "ОКПД2 коды",
+            "nullable": true
+          },
+          "Okved2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "ОКВЭД2 коды",
+            "nullable": true
+          },
+          "JointObjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalApiPurchaseObjectModel"
+            },
+            "description": "Совместные объекты закупки",
+            "nullable": true
+          },
+          "Customers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalApiOrganizationModel"
+            },
+            "description": "Заказчики",
+            "nullable": true
+          },
+          "AbandonedReason": {
+            "type": "string",
+            "description": "Причина несостоявшейся закупки",
+            "nullable": true
+          },
+          "TenderRequirements": {
+            "$ref": "#/components/schemas/TenderRequirements"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiOrganizationModel": {
+        "type": "object",
+        "properties": {
+          "Organization": {
+            "$ref": "#/components/schemas/ApiOrganizationModelBase"
+          },
+          "CustomerRequirements": {
+            "$ref": "#/components/schemas/ExternalApiCustomerRequirements"
+          },
+          "StartContractDate": {
+            "type": "string",
+            "description": "Начало срока исполнения контракта",
+            "nullable": true
+          },
+          "EndContractDate": {
+            "type": "string",
+            "description": "Конец срока исполнения контракта",
+            "nullable": true
+          },
+          "Objects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalApiPurchaseObjectModel"
+            },
+            "description": "Объекты закупки",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Организация"
+      },
+      "ExternalApiPayInfo": {
+        "type": "object",
+        "properties": {
+          "Amount": {
+            "oneOf": [
+              {
+                "type": "number",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "nullable": true
+          },
+          "Part": {
+            "oneOf": [
+              {
+                "type": "number",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiPurchaseModel": {
+        "type": "object",
+        "properties": {
+          "UpdatedDatetime": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Дата последнего изменения закупки",
+                "format": "date-time",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Дата последнего изменения закупки",
+            "nullable": true
+          },
+          "InitialSum": {
+            "$ref": "#/components/schemas/ExternalApiInitialSum"
+          },
+          "NotificationType": {
+            "type": "string",
+            "description": "Тип закупки",
+            "nullable": true
+          },
+          "NotificationPlacingWay": {
+            "type": "string",
+            "description": "Способ отбора",
+            "nullable": true
+          },
+          "AuctionDateTime": {
+            "type": "string",
+            "description": "Дата проведения аукциона / Дата рассмотрения заявок",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiAttachmentModel"
+            },
+            "description": "Информация о документах",
+            "nullable": true
+          },
+          "EtpLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на закупку на ЭТП",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на закупку на ЭТП",
+            "nullable": true
+          },
+          "EisLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на закупку на ЕИС",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на закупку на ЕИС",
+            "nullable": true
+          },
+          "Link": {
+            "type": "string",
+            "description": "Ссылка на закупку в КЗ",
+            "format": "uri",
+            "nullable": true
+          },
+          "Organizer": {
+            "$ref": "#/components/schemas/OrganizerInfo"
+          },
+          "CancelReason": {
+            "type": "string",
+            "description": "Причина отмены",
+            "nullable": true
+          },
+          "PlannedPublishDate": {
+            "type": "string",
+            "description": "Дата публикации закупки по план позиции",
+            "nullable": true
+          },
+          "Id": {
+            "type": "string",
+            "description": "ID закупки",
+            "nullable": true
+          },
+          "NotificationNumber": {
+            "type": "string",
+            "description": "Номер закупки",
+            "nullable": true
+          },
+          "IkzCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Идентификационный код закупки (44-ФЗ)",
+            "nullable": true
+          },
+          "Title": {
+            "type": "string",
+            "description": "Имя/описание закупки",
+            "nullable": true
+          },
+          "SMP": {
+            "type": "boolean",
+            "description": "Признак Закупка для СМП"
+          },
+          "PublicationDateTimeUTC": {
+            "type": "string",
+            "description": "Дата создания закупки",
+            "format": "date-time"
+          },
+          "ApplicationDeadline": {
+            "type": "string",
+            "description": "Дата окончания подачи заявок",
+            "format": "date-time",
+            "nullable": true
+          },
+          "CommissionDeadline": {
+            "type": "string",
+            "description": "Дата подведения итогов",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ContactPerson": {
+            "$ref": "#/components/schemas/ApiContactPerson"
+          },
+          "Lots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalApiLotModel"
+            },
+            "description": "Лоты",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiPurchaseObjectModel": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Наименование объекта закупки",
+            "nullable": true
+          },
+          "Okpd2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Коды ОКПД2",
+            "nullable": true
+          },
+          "Ktrus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Коды КТРУ",
+            "nullable": true
+          },
+          "Okved2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Коды оквэд",
+            "nullable": true
+          },
+          "Quantity": {
+            "type": "number",
+            "description": "Количество",
+            "format": "double",
+            "nullable": true
+          },
+          "Okei": {
+            "type": "string",
+            "description": "Единица измерения (abbreviation)",
+            "nullable": true
+          },
+          "ItemPrice": {
+            "type": "number",
+            "description": "Стоимость за единицу объекта",
+            "format": "double",
+            "nullable": true
+          },
+          "PositionPrice": {
+            "type": "number",
+            "description": "Общая стоимость объекта",
+            "format": "double",
+            "nullable": true
+          },
+          "DrugInfo": {
+            "$ref": "#/components/schemas/DrugInfoModel"
+          },
+          "Characteristics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CharacteristicsModel"
+            },
+            "description": "Дополнительные характеристики",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalApiSearchArgs": {
+        "required": [
+          "DateTimeFrom",
+          "DateTimeTo"
+        ],
+        "type": "object",
+        "properties": {
+          "Text": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Ключевые слова",
+            "nullable": true
+          },
+          "Exclude": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Исключения",
+            "nullable": true
+          },
+          "Categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchCategory"
+            },
+            "description": "Отрасль",
+            "nullable": true,
+            "deprecated": true
+          },
+          "IncludeInns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Заказчик Добавить",
+            "nullable": true
+          },
+          "ExcludeInns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Заказчик Исключить",
+            "nullable": true
+          },
+          "DateTimeFrom": {
+            "type": "string",
+            "description": "Опубликовано С",
+            "format": "date-time"
+          },
+          "DateTimeTo": {
+            "type": "string",
+            "description": "Опубликовано до",
+            "format": "date-time"
+          },
+          "ParticipantsInns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ИНН Участника/победителя/поставщика (Доступно для тарифа \"Поиск 2.0\")",
+            "nullable": true
+          },
+          "ParticipantsState": {
+            "$ref": "#/components/schemas/ApiSearchParticipantsState"
+          },
+          "EnableParticipantsFromDocuments": {
+            "type": "boolean",
+            "description": "Разрешить поиск по участникам, найденным в документации (Доступно для тарифа \"Поиск 2.0\")",
+            "nullable": true
+          },
+          "RegionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Регионы",
+            "nullable": true
+          },
+          "PurchaseStatuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchPurchaseStatus"
+            },
+            "description": "Этап",
+            "nullable": true
+          },
+          "Laws": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchLaw"
+            },
+            "description": "Тип торгов",
+            "nullable": true
+          },
+          "Procedures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchProcedure"
+            },
+            "description": "Способ отбора",
+            "nullable": true
+          },
+          "ElectronicPlaces": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "description": "0 - Сбербанк-АСТ<br>\n1 - РТС-тендер<br>\n2 - Росэлторг (ЕЭТП)<br>\n3 - ZakazRF (АГЗРТ)<br>\n4 - ЭТП «Фабрикант»<br>\n5 - B2B-Center<br>\n6 - Росатом<br>\n7 - ЭТП ГПБ<br>\n8 - Прочие площадки<br>\n9 - OTC-tender<br>\n10 - ТЭК-Торг<br>\n11 - РАД (Lot-Online)<br>\n12 - ЕИС<br>\n14 - Татнефть<br>\n15 - Роснефть<br>\n16 - Лукойл<br>\n17 - Электронный магазин Московской области<br>\n18 - ПолюсГолд<br>\n19 - ЭТП РФ<br>\n20 - Газпромнефть<br>\n21 - Тендер.Про<br>\n22 - РТ-Комплектимпекс<br>\n23 - Портал поставщиков<br>\n24 - ЕАТ (Березка)<br>\n25 - Электронная торговая площадка ONLINECONTRACT<br>\n26 - ЕАИСТ<br>\n27 - Госзаказ Тула<br>\n28 - Комитет по государственному заказу Санкт‑Петербурга<br>\n29 - Малые закупки Калужской области<br>\n30 - ПАО «Транснефть»<br>\n31 - Торги 223<br>\n32 - ЭТП Группы ТМК<br>\n33 - Малые закупки Мурманской области<br>\n34 - ПМХ<br>\n35 - РЖД<br>\n36 - ЭТП ПАО ММК<br>\n37 - ФосАгро<br>\n38 - Малые закупки Смоленской области<br>\n39 - Bidzaar<br>\n40 - Онлайн сервис SBERB2B<br>\n41 - ЭТП Регион<br>\n42 - Закупки Вологодской области<br>\n43 - Малые закупки Удмуртской Республики<br>\n44 - ЭТП Группы ЛСР<br>\n45 - РУСАЛ<br>\n46 - Газпром<br>\n47 - Электронная площадка АСТ ГОЗ<br>\n48 - Управление муниципальных закупок администрации городского округа город Воронеж*<br>\n49 - Малые закупки Самарской области<br>\n50 - МТС<br>\n51 - РКС г.Севастополь<br>\n52 - ПАО «Т‑Плюс»<br>\n53 - Госзаказ Ярославль<br>\n54 - Алроса<br>\n55 - ЭТП УГМК<br>\n56 - Малые закупки Воронежской области<br>\n57 - Норникель<br>\n58 - ЭТП ТОРГИ‑ОНЛАЙН<br>\n59 - УЭТП<br>\n60 - ПАО КАМАЗ<br>\n61 - Закупки21<br>\n62 - Центр услуг в сфере закупок<br>\n63 - SETonline<br>\n64 - Segezha Group<br>\n65 - Система электронных торгов Республики Саха (Якутия)<br>\n66 - Центр дистанционных торгов<br>\n67 - Центр Закупок Республики Саха (Якутия)<br>\n68 - etpzakaz.ru<br>\n69 - etp-rt.ru<br>\n70 - Единая система торговых процедур<br>\n71 - ELTorg<br>\n72 - Российская электронная система торгов<br>\n73 - Юнипро<br>\n74 - ЭТП Агрохолдинга Сибирский Премьер<br>\n75 - ЭТП «Альфалот»<br>\n76 - Элтокс<br>\n77 - Электронный магазин Петрозаводского городского округа<br>\n78 - Электронный Магазин Ленинградской области<br>\n79 - Электронные торги России<br>\n80 - Электронные аукционы Сибири<br>\n81 - ЭЛ-тендер<br>\n82 - Центр развития закупок РТ<br>\n83 - Уральская ЭТП<br>\n84 - Уралкалий<br>\n85 - СУЭК<br>\n86 - ССК<br>\n87 - Сибирская генерирующая компания<br>\n88 - Сибирская аграрная группа<br>\n89 - Портал поставщиков Южного Урала<br>\n90 - Петербургский метрополитен<br>\n91 - ПАО «ПИК-СПЕЦИАЛИЗИРОВАННЫЙ ЗАСТРОЙЩИК»<br>\n92 - Объединенная ЭТП<br>\n93 - Общественная электронная торговая площадка<br>\n94 - Норильский никель<br>\n95 - Нефтеавтоматика<br>\n96 - Московский аэропорт Домодедово<br>\n97 - Малые закупки Тверской области<br>\n98 - Малые закупки Тамбовской области<br>\n99 - Малые закупки Республики Мордовия<br>\n100 - Малые закупки г.Тверь<br>\n101 - ККЗ1885<br>\n102 - Квадра<br>\n103 - Каспийский трубопроводный консорциум<br>\n104 - Иркутск Ойл<br>\n105 - Заволжские просторы<br>\n106 - ЕВРАЗ<br>\n107 - Группа ЧТПЗ<br>\n108 - Госкорпорация «Роскосмос»<br>\n109 - ГазНефтеторг.ру<br>\n110 - В2В Сибур<br>\n111 - Аэрофлот<br>\n112 - Аукционный Конкурсный Дом<br>\n113 - АО «Биржа «Санкт‑Петербург»<br>\n114 - АО «РТИ»<br>\n115 - Агрегатор торгов малого объема<br>\n116 - Автодор<br>\n117 - ЭТП RHtorg<br>\n118 - ЭТП БРУСНИКА.SRM<br>\n119 - ЭТП Талан<br>\n120 - Казанский федеральный университет<br>\n121 - Малые закупки Архангельской области<br>\n122 - Малые закупки Курганской области<br>\n123 - Малые закупки Липецкой области<br>\n124 - Малые закупки Курской области<br>\n125 - Малые закупки Брянской области<br>\n126 - Сайт городского округа Самара<br>\n127 - ОАО «Уральский трубный завод»<br>\n128 - РСТИ<br>\n129 - ООО УК «Юника»<br>\n130 - ГК «АСПЭК»<br>\n131 - Финансово-промышленная компания «Инвест»<br>\n133 - ГК «Тверской Мелькомбинат»<br>\n134 - АО \"ЭН+ ГЕНЕРАЦИЯ\"<br>\n135 - ГК «Борец»<br>\n136 - АО «Синтез-Каучук»<br>\n137 - ОАО «Уралэлектро»<br>\n138 - АО «Муромский стрелочный завод»<br>\n139 - Самарское АО «УПНП и КРС»<br>\n140 - Омск Карбон Групп<br>\n141 - Спортмастер<br>\n142 - Ярославский моторный завод<br>\n143 - Клиника-санаторий «Набережные Челны»<br>\n144 - АНО «Развитие человеческого капитала»<br>\n145 - АО «НК «Нефтиса»<br>\n146 - АО «СТРОЙСЕРВИС»<br>\n147 - Фонд поддержки детей<br>\n148 - ПАО «НЕФАЗ»<br>\n149 - ГК «Кировский завод»<br>\n150 - СИТНО<br>\n152 - ГК «МИЦ»<br>\n153 - ЗАО «Самарский гипсовый комбинат»<br>\n154 - ГК «МЕДСИ»<br>\n155 - ПАО НК «РуссНефть»<br>\n156 - АО «ЭР-Телеком Холдинг»<br>\n158 - Башкирская генерирующая компания<br>\n159 - АО «Волтайр-Пром»<br>\n160 - PeWeTe Group<br>\n161 - Копейский машиностроительный завод<br>\n162 - Банк Приморье<br>\n163 - АО «НЗНП МЕНЕДЖМЕНТ»<br>\n164 - АО «Медицина»<br>\n165 - Богучанская ГЭС<br>\n166 - УренгойДорСтрой<br>\n167 - Птицефабрика «Свердловская»<br>\n168 - Центр внедрения «ПРОТЕК»<br>\n170 - ООО «ЦДС‐Клиентский Сервис»<br>\n171 - «Востокцемент»<br>\n172 - ООО «Руссоль»<br>\n173 - ОАО АК «Уральские авиалинии»<br>\n174 - АО \"ЖТК\"<br>\n175 - Нефтегазовая компания «Славнефть»<br>\n176 - ЕВРОТРАНССТРОЙ<br>\n177 - Фанпарк «Бобровый лог»<br>\n178 - ОАО «НК «Янгпур»<br>\n179 - АО «Уралоргсинтез»<br>\n181 - ПАО «Саратовнефтегаз»<br>\n182 - ООО «Институт Гипроникель»<br>\n183 - Химическая компания «Щекиноазот»<br>\n184 - АО«Метафракс Кемикалс»<br>\n185 - ООО «Профессиональный баскетбольный клуб «ЦСКА»<br>\n186 - «Салым Петролеум Девелопмент Н.В.»<br>\n187 - ГК «Первый строительный фонд»<br>\n188 - ВОЛМА<br>\n189 - AO «АльфаСтрахование»<br>\n190 - АПК «СТОЙЛЕНСКАЯ НИВА»<br>\n191 - АО «ОХК «УРАЛХИМ»<br>\n192 - ГК «Imperial Energy»<br>\n193 - Портал «Маркетинговые технологии»<br>\n194 - Уралэнерго<br>\n195 - ГК «КАРАКАН ИНВЕСТ»<br>\n196 - АО «Вагонреммаш»<br>\n197 - АО «СНХЗ»<br>\n198 - ПАО «Орскнефтеоргсинтез»<br>\n199 - ООО «Завод транспортного оборудования»<br>\n200 - ГК КПД<br>\n201 - СМП Банк<br>\n202 - Компания «Русский Уголь»<br>\n203 - УК Rubex Group<br>\n204 - МегаФон<br>\n205 - «НефтеТрансСервис»<br>\n206 - АО «ЕЗ ОЦМ»<br>\n207 - ООО «Интер РАО — Инжиниринг»<br>\n208 - АО «Лада Имидж»<br>\n209 - АО «Клевер»<br>\n210 - ООО «Чебаркульская птица»<br>\n211 - «ЕВРОЦЕМЕНТ груп»<br>\n213 - АО «Сочи Парк»<br>\n214 - ООО «Русская Рыбопромышленная компания»<br>\n215 - ГК «Римера»<br>\n216 - UDS<br>\n217 - Авиакомпания Nord Star<br>\n218 - АО «УК «Кузбассразрезуголь»<br>\n219 - OOO «КАМАЗжилбыт»<br>\n220 - Богучанский алюминиевый завод<br>\n221 - МОСОБЛБАНК<br>\n222 - АО «Борхиммаш»<br>\n223 - КБ «Кубань Кредит»<br>\n224 - Малые закупки Свердловской области<br>\n225 - Акрон<br>\n226 - АНО «Исполнительная дирекция «Универсиада-2023»<br>\n227 - ООО «РКС-Инжиниринг»<br>\n228 - ВТБ Бизнес Коннект<br>\n229 - ЭТП Северсталь<br>\n230 - ЭТП Орелстрой<br>\n231 - ЭТП Славянск ЭКО<br>\n232 - ЭТП Главстрой<br>\n233 - ЭТП ФГ Сафмар<br>\n234 - ЭТП Трансстроймеханизация<br>\n235 - ЭТП ГК Самолет<br>\n236 - ЭТП МСУ-1<br>\n237 - Сибур<br>\n238 - Торговый дом РЖД<br>\n239 - Тяжпромарматура<br>\n240 - Главновосибирскстрой<br>\n241 - Фармаимпекс<br>\n242 - РПРЗ (Ростовский прессово-раскройный завод)<br>\n243 - Железно.Закупки<br>\n244 - АНО ТВ-Новости<br>\n245 - ЭТП ЭТАЛОН<br>\n246 - ГК Основа<br>\n247 - Русский Краб<br>\n248 - РЕСО Гарантия<br>\n249 - Гринвичстрой<br>\n250 - ЭТП РосТорги<br>\n251 - РФЧР-ЗАКУПКИ.РФ<br>\n252 - ЭТП МИР<br>\n253 - Единая торговая площадка Торгово-промышленной палаты<br>\n254 - Региональная информационная система Краснодарского края<br>\n255 - Закупки.ру<br>\n256 - ЭТП Федерация закупок<br>\n257 - Центр проведения торгов<br>\n258 - ЭТП Птицефабрика Акашевская<br>\n259 - ISHIM-AGRO<br>\n260 - ЭНКО<br>\n263 - АО РИТМ ТПТА<br>\n264 - Торговая площадка агрокомплекса \"БЭЗРК-Белгранкорм\" (Ясные Зори)<br>\n265 - NORTEC<br>\n266 - ЭТП ЮГМК<br>\n267 - UTLC<br>\n268 - ЭТП КамКабель<br>\n269 - ЭТП Yaratelle<br>\n270 - АГРОИНВЕСТ<br>\n271 - Башнефтегеофизика<br>\n273 - Агрохолдинг \"СТЕПЬ\"<br>\n274 - Первый ДСК<br>\n276 - ЭТП STI-Trade<br>\n277 - Тольяттиазот<br>\n278 - Курорт \"Красная Поляна\"<br>\n279 - НПО \"ЭЛСИБ\" ПАО<br>\n281 - Мой бизнес Волгоград<br>\n283 - Златоустовский металлургический завод<br>\n284 - АО «Сарапульский электрогенераторный завод»<br>\n285 - Мой бизнес Вологодской области<br>\n286 - Унистрой<br>\n287 - Энерготрансбанк<br>\n288 - ЭТП СМАЙНЭКС<br>\n289 - ЭТП Capital Nova<br>\n290 - ЭТП Нефтьсервисхолдинг<br>\n291 - ЭТП Level Group<br>\n292 - ЭТП Дон<br>\n293 - ЭТП Металл-ИТ<br>\n294 - Деловые Линии<br>\n295 - Ростсельмаш<br>\n296 - Новатэк<br>\n297 - Сахалинская Энергия<br>\n298 - Партнер-Строй<br>\n299 - Корпорация Красный октябрь<br>\n300 - Макси Девелопмент<br>\n301 - Тендер Технология<br>\n302 - ЭТП Глобал Тендер<br>\n303 - АО ГК АЗОТ<br>\n305 - Нова<br>\n306 - Малые закупки ЯНАО<br>\n307 - Малые закупки Оренбуржья<br>\n308 - Курганхиммаш<br>\n309 - Химический парк «Тагил»<br>\n310 - ЭТП Агро<br>\n311 - ГК Земтек<br>\n312 - ГК Инсити<br>\n313 - Ярославский радиозавод<br>\n314 - ПаритетАгро<br>\n315 - СЗ «Терминал-Ресурс»<br>\n316 - Русагротранс<br>\n317 - КПД-ГАЗСТРОЙ<br>\n318 - АнРуссТранс<br>\n320 - Балтика<br>\n321 - ГК СССР<br>\n322 - Абсолют<br>\n323 - ТЗК Енисей<br>\n324 - АО \"КСК\"<br>\n325 - Евразийский Банк Развития<br>\n326 - Фонд поддержки предпринимательства Кузбасса<br>\n327 - Pony Express<br>\n328 - \"Мой бизнес\" Тверской области<br>\n329 - Уральский турбинный завод<br>\n330 - АО \"АТС\"<br>\n331 - КК-Инвест<br>\n332 - АО \"Газстройдеталь\"<br>\n333 - Тюменская Сервисная Геофизическая Компания<br>\n334 - ГК \"Прок\"<br>\n335 - ЭТП Исток.Линк<br>\n336 - Государственные Закупки Республики Казахстан<br>\n337 - Портал закупок \"Самрук-Казына\"<br>\n338 - ГИАС Республики Беларусь<br>\n339 - ЭТП Национальный Центр Маркетинга<br>\n340 - Евразийская группа<br>\n341 - ЕЭП MITWORK<br>\n342 - ЭТП ЕвразианТек<br>\n343 - ETS Тендер<br>\n344 - ИС \"Тендеры\"<br>\n345 - РЖД-Медицина<br>\n346 - ЭТП Торги РФ<br>\n347 - Закупки ЯНАО<br>\n348 - ПРО_ЗАКУПКИ.РУ<br>\n349 - Cooper<br>\n350 - ОЙЛГАЗТЭТ<br>\n351 - ГК ТИС-Строй<br>\n352 - Р-ТЕНДЕР<br>\n353 - Агрохолдинг «Равис»<br>\n354 - Малые закупки Республики Крым<br>\n355 - Тендерит<br>\n356 - Неометрия<br>\n357 - Застройщик «СМК»<br>\n358 - МАУ «МФЦ» города Волгодонска<br>\n359 - Мойтендер<br>\n361 - ГК АГАТ<br>\n362 - АК БАРС СТРОЙ<br>\n363 - АО «Пургаз»<br>\n364 - Учебный центр «Энергетик-Оренбург»<br>\n365 - ООО «Афинский НПЗ»<br>\n366 - Фонд защиты вкладчиков<br>\n367 - ООО «Компания «Востсибуголь»<br>\n369 - АО «Каустик»<br>\n370 - АО «Камтэкс-Химпром» <br>\n371 - ЭТП АРСИБ Холдинг Групп<br>\n372 - ГК 1Oil<br>\n373 - ООО «Р-Строй»<br>\n374 - ООО \"АБАЗИНСКИЙ РУДНИК\"<br>\n375 - ПАО «ТЗА»<br>\n376 - АО «Завод имени В. А. Дегтярева»<br>\n377 - ООО «Группа Астон»<br>\n378 - ГК ФСК<br>\n379 - ООО «ДОГМА»<br>\n380 - ООО \"Строительная Компания Ск10\"<br>\n381 - ООО «Северная Строительная Компания»<br>\n382 - АО «Салаватнефтемаш»<br>\n383 - АО «КБ ЛУЧ»<br>\n384 - ТНПК<br>\n385 - ООО \"АйЭрСи Групп\"<br>\n386 - Ростовский литейный завод<br>\n388 - Малые закупки Чувашской республики<br>\n389 - ЭТП ГК Аквилон<br>\n390 - ЭТП ГК Автобан<br>\n391 - Малые закупки Республики Дагестан<br>\n392 - Мой бизнес Оренбургской области<br>\n393 - ЭТП «Мангазея»<br>\n394 - ООО «АвтоЗапчасть КАМАЗ»<br>\n395 - Санаторий «Белая Русь»<br>\n396 - ООО «Европейский серный терминал»<br>\n397 - ФортеИнвест<br>\n398 - Гарантийный фонд Приморского края<br>\n399 - GMS.GROUP<br>\n400 - АО ТГК «БЕТА»<br>\n401 - ЭТП ИТСТОРГ<br>\n402 - ООО «КАМАЗэнергоремонт»<br>\n403 - Санаторий «Казахстан»<br>\n404 - Лугансквода<br>\n405 - ООО «МКС»<br>\n406 - ФГБУ «НМИЦ онкологии им. Н.Н. Петрова»<br>\n407 - АО «Новомет-Пермь»<br>\n408 - Новосибирская Топливная Корпорация<br>\n409 - АО «Мелеузовские минеральные удобрения»<br>\n410 - АО «ОАТ»<br>\n411 - ЭТП Praktis<br>\n412 - Snab.online<br>\n413 - Санаторий «Беларусь»<br>\n414 - ЭТП Suppman<br>\n415 - ЭТП Е-строй<br>\n416 - ЭТП ХаризМЫ<br>\n417 - ЭТП Мармакс<br>\n418 - ГК «Третий Трест»<br>\n419 - ТФОМС Тюменской области<br>\n420 - Апрель<br>\n421 - ЭТП Норебо<br>\n422 - ЕвроХим<br>\n424 - Мой бизнес Херсонской области<br>\n425 - поле.рф<br>\n426 - Кузбасская Топливная Компания<br>\n427 - Совэкс<br>\n428 - Белгородская сбытовая компания<br>\n429 - Адамант-Строй<br>\n430 - КГБУЗ \"Краевая клиническая больница\"<br>\n431 - КТ-спектр<br>\n432 - Сити21<br>\n433 - МТС-Банк<br>\n434 - Торги Федерации<br>\n435 - Чебоксарский Электроаппаратный завод<br>\n436 - Склад Торгово-Финансовой Компании \"КАМАЗ\"<br>\n437 - КИП Мастер<br>\n438 - Фонд поддержки предпринимательства Республики Мордовия<br>\n439 - Кемеровоспецстрой<br>\n440 - НефтеХимСервис<br>\n441 - Коннектим<br>\n442 - АНО \"Развитие парков\"<br>\n443 - Мой бизнес г. Улан-Удэ<br>\n444 - AVA Group<br>\n445 - Фонд поддержки предпринимательства Ямало-Ненецкого автономного округа<br>\n446 - Фонд поддержки предпринимательства Донецкой Народной Республики<br>\n447 - Фонд поддержки предпринимательства Забайкальского края<br>\n448 - Белоруснефть-Сибирь<br>\n449 - Красноярский краевой центр развития бизнеса и микрокредитная компания<br>\n450 - Фонд развития предпринимательства Челябинской области<br>\n451 - ЭТП Разум<br>\n452 - Группа компаний \"Горкунов\"<br>\n453 - Фонд поддержки предпринимательства Кировской области<br>\n454 - Фонд поддержки предпринимательства Луганской Народной Республики<br>\n455 - Группа компаний \"Дом-Строй\"<br>\n456 - Сколковский институт науки и технологий<br>\n457 - МОСКВА-СОКОЛ<br>\n458 - Фонд поддержки предпринимательства Томской области<br>\n459 - Ставропольэнергосбыт<br>\n460 - MR Group<br>\n461 - PLUS Development<br>\n462 - Краевой сельскохозяйственный фонд<br>\n463 - etp.exkavatorov<br>\n464 - Московский центр развития спортивной инфраструктуры<br>\n465 - Благо<br>\n466 - СПЕЦТЕНДЕР<br>\n467 - ЭТП Республики Башкортостан<br>\n468 - Объединенная домостроительная корпорация<br>\n469 - КомСтрин-Пермь<br>\n470 - Лысьвенский металлургический завод<br>\n471 - ДНС Строй<br>\n472 - Фонд поддержки и развития предпринимательства Иркутской области<br>\n473 - Центр поддержки предпринимательства Смоленской области<br>\n474 - Колабыт<br>\n475 - Нефтяная компания Сладковско-Заречное<br>\n476 - Гранель<br>\n477 - Точно<br>\n478 - Камчатский центр поддержки предпринимательства<br>\n479 - Фонд поддержки предпринимательства Крыма<br>\n480 - Вода Крыма<br>\n481 - МОСОБЛТОРГ<br>\n482 - Кузбасс Трейд<br>\n483 - Паритет<br>\n484 - Девелоперская компания Люди<br>\n485 - Челябинский электрометаллургический комбинат<br>\n486 - Народный Совет Луганской Народной Республики<br>\n487 - ГК Страна Девелопмент<br>\n488 - МонАрх<br>\n489 - Мостовик<br>\n490 - Группа Компаний НМВ<br>\n491 - Таврида Девелопмент<br>\n492 - Колди<br>\n493 - Центр поддержки предпринимательства Тульской области<br>\n494 - АО \"Развитие\"<br>\n495 - Голос.Торги<br>\n496 - Стан-Торги<br>\n497 - Информационная система \"Управление закупками отдельными видами юридических лиц\"<br>\n\\[Устарела\\] 132 - ЧУЗ «Клиническая больница «РЖД-Медицина» г. Ростов-на-Дону». Используйте 345<br>\n\\[Устарела\\] 157 - ЧУЗ «РЖД-медицина» г. Ижевск». Используйте 345<br>\n\\[Устарела\\] 169 - ЧУЗ «Клиническая больница «РЖД-Медицина» г. Курск». Используйте 345<br>\n\\[Устарела\\] 151 - ЧУЗ «Клиническая больница «РЖД-Медицина» г. Хабаровск». Используйте 345<br>\n\\[Устарела\\] 272 - ЧУЗ \"Клиническая больница \"РЖД-Медицина\" г. Челябинск\". Используйте 345<br>\n\\[Устарела\\] 275 - ЧУЗ \"Клиническая больница \"РЖД-Медицина\" г. Уфа\". Используйте 345<br>\n\\[Устарела\\] 280 - ЧУЗ \"Клиническая больница \"РЖД-Медицина\" г. Ярославль\". Используйте 345<br>\n\\[Устарела\\] 282 - ЧУЗ \"Клиническая больница \"РЖД-Медицина\" г. Калуга\". Используйте 345<br>\n\\[Устарела\\] 304 - ЧУЗ \"Клиническая больница \"РЖД-Медицина\" г. Комсомольск-на-Амуре\". Используйте 345<br>\n\\[Устарела\\] 13 - Комос Групп. Используйте 414<br>\n\\[Устарела\\] 319 - Ижевский мотозавод «Аксион-холдинг». Используйте 414<br>\n\\[Устарела\\] 360 - Агрохолдинг «Дороничи». Используйте 414<br>\n\\[Устарела\\] 423 - ЭТП Мустанг / Унагранде. Используйте 414<br>\n\\[Устарела\\] 180 - ООО «Ува-Молоко». Используйте 414<br>\n",
+              "format": "int32"
+            },
+            "description": "ЭТП",
+            "nullable": true
+          },
+          "CategoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "description": "1 - Пожарная безопасность<br>\n2 - Физическая охрана<br>\n3 - Системы видеонаблюдения: поставка, монтаж и обслуживание<br>\n4 - Специальные средства для людей с ограниченными возможностями<br>\n5 - Дорожные знаки, таблички и указатели<br>\n6 - Техническая и проектная документация<br>\n7 - Оружие и боеприпасы<br>\n8 - Другое<br>\n9 - Сыскные услуги<br>\n10 - Хранилища, сейфы<br>\n11 - Системы охраны: поставка, монтаж и обслуживание<br>\n12 - Инкассация и сопровождение грузов<br>\n13 - Средства индивидуальной защиты (СИЗ) и снаряжение<br>\n15 - Выставки, конференции, семинары<br>\n16 - Страхование<br>\n17 - Экспертиза правовых документов<br>\n18 - Юридические услуги<br>\n19 - Банковское оборудование и ПО<br>\n20 - Услуги курьерских и почтовых служб<br>\n21 - Банковские услуги<br>\n22 - Другое<br>\n23 - Бухгалтерский учет и аудит<br>\n24 - Услуги по аттестации, лицензированию, сертификации<br>\n25 - Кредит, лизинг<br>\n26 - Услуги оценки<br>\n28 - Оборудование для лесообрабатывающей промышленности<br>\n29 - Другое<br>\n30 - Готовые изделия лесоперерабатывающей промышленности<br>\n31 - Услуги в сфере лесопользования, деревообработка<br>\n32 - Лесопиломатериалы<br>\n34 - Разработка программного обеспечения<br>\n35 - Создание интернет-сайтов, порталов, web-дизайн<br>\n36 - Компьютерные сети<br>\n37 - Электронные терминалы<br>\n38 - Покупка программного обеспечения, сопровождение<br>\n39 - Услуги в сфере информационной безопасности<br>\n40 - Компьютеры и комплектующие, оргтехника, оборудование для презентаций<br>\n41 - Расходные материалы<br>\n42 - Ремонт и техническое обслуживание<br>\n43 - Другое<br>\n45 - Музыкальные инструменты<br>\n46 - Бумага и бумажные изделия (бумага, конверты, бланочная продукция и т.п.)<br>\n47 - Одежда, специальная одежда, форменная одежда<br>\n48 - Галантерейная продукция, фурнитура<br>\n49 - Поставка печатных изданий (книги, журналы, т.п.)<br>\n50 - Услуги изготовления печатных изделий (книги, журналы, т.п.)<br>\n51 - Тара и упаковка<br>\n52 - Товары для детей<br>\n53 - Мягкий инвентарь, текстиль<br>\n54 - Другое<br>\n55 - Косметические товары и предметы личной гигиены<br>\n56 - Оборудование для бумажной промышленности, полиграфическое оборудование, оборудование для почтамтов и отделений связи<br>\n57 - Обувь, специальная обувь<br>\n58 - Оборудование для швейной и текстильной промышленности<br>\n59 - Техническое обслуживание и ремонт оборудования для легкой промышленности<br>\n60 - Хозяйственные товары<br>\n61 - Ткани, текстильное сырье<br>\n63 - Услуги по ликвидации чрезвычайных ситуаций<br>\n64 - Оказание гуманитарной помощи<br>\n66 - Информационные услуги<br>\n67 - Реклама, изготовление и размещение (наружная, пресса, интернет)<br>\n68 - Услуги маркетинговых, рекламных и PR агентств<br>\n69 - Другое<br>\n70 - Телевизионные и радио- услуги<br>\n71 - Аудио-, видео-, фото- произведения (изготовление, покупка, прокат)<br>\n72 - Сувенирная продукция<br>\n73 - Консультационные услуги<br>\n74 - Социологические исследования и опросы<br>\n76 - Холодильное оборудование (поставка, монтаж, обслуживание, комплектующие)<br>\n77 - Другое<br>\n78 - Навесное оборудование (поставка, ремонт, монтаж, обслуживание)<br>\n79 - Грузоподъемное оборудование и механизмы<br>\n80 - Станкостроение<br>\n81 - Лифты, лифтовое оборудование<br>\n82 - Судостроение, судоремонт, судовое оборудование<br>\n83 - Оборудование для торговли и общественного питания<br>\n84 - Испытательное и контрольно-поверочное оборудование (покупка, обслуживание), запорно-пломбировочные устройства, услуги метрологических служб<br>\n85 - Авиастроение, ракетостроение, оборудование для космической отрасли<br>\n86 - Промышленное  газовое оборудование (газораспределительные станции, газорегуляторные пункты, котельные установки и пр.)<br>\n87 - Автомобилестроение<br>\n88 - Локомотивостроение, вагоностроение<br>\n89 - Тракторное и сельскохозяйственное машиностроение<br>\n90 - Оборудование для машиностроения<br>\n92 - Другое<br>\n93 - Медицинские товары и материалы<br>\n94 - Лекарственные средства, лекарственные препараты, витамины<br>\n95 - Медицинская техника (медицинское оборудование, медицинский инструментарий и медицинская мебель)<br>\n96 - Ветеринария<br>\n97 - Медицинские услуги<br>\n98 - Медицинские исследования<br>\n99 - Ремонт и обслуживание медицинской техники<br>\n101 - Метизы<br>\n102 - Литейное производство<br>\n103 - Металлообработка<br>\n104 - Металлолом<br>\n105 - Другое<br>\n106 - Металлоконструкции<br>\n107 - Готовые металлоизделия<br>\n108 - Строительная арматура<br>\n109 - Металлы, сталь, сплавы<br>\n110 - Трубопроводная арматура<br>\n111 - Оборудование для работы с металлом<br>\n112 - Металлопрокат<br>\n114 - Обучение, подготовка, переподготовка кадров<br>\n115 - Другое<br>\n116 - Научные исследования и разработки<br>\n117 - Материалы<br>\n118 - Лабораторное и учебное оборудование (поставка, запчасти, ремонт, обслуживание)<br>\n119 - Геодезия, картография, изыскательские работы<br>\n121 - Документооборот, работа с архивами<br>\n122 - Специальная оценка условий труда<br>\n123 - Предметы интерьера<br>\n124 - Мебель (для дома, офиса, прочая)<br>\n125 - Товары для дома, офиса<br>\n126 - Жалюзи, роллеты<br>\n127 - Услуги по подбору и предоставлению персонала<br>\n128 - Мебельная фурнитура<br>\n129 - Бытовая техника (покупка, обслуживание и ремонт)<br>\n130 - Другое<br>\n131 - Канцелярские принадлежности<br>\n132 - Аудио, видео, фототехника (покупка, аренда)<br>\n133 - Услуги прачечных, химчисток<br>\n134 - Оборудование для химчисток и прачечных (покупка, обслуживание и ремонт)<br>\n135 - Кондиционеры (покупка, обслуживание и ремонт)<br>\n137 - Складское оборудование<br>\n138 - Таможенные услуги<br>\n139 - Грузовые перевозки<br>\n140 - Другое<br>\n141 - Услуги хранения, складирования, услуги по реализации имущества, товароведческие экспертизы<br>\n142 - Пассажирские перевозки<br>\n143 - Экспедиторские услуги, логистика, разгрузочно-погрузочные работы<br>\n145 - Алкогольная продукция<br>\n146 - Продуктовые наборы (подарки, сухпайки)<br>\n147 - Питьевая вода, кулеры<br>\n148 - Плодоовощная продукция<br>\n149 - Безалкогольная продукция<br>\n150 - Чай, кофе, какао<br>\n151 - Птица, яйцо, субпродукты<br>\n152 - Сухофрукты, орехи, грибы<br>\n153 - Детское и диетическое питание<br>\n154 - Консервы и продукты готовые к употреблению<br>\n155 - Продукты питания в ассортименте<br>\n156 - Мука, хлеб, кондитерские изделия<br>\n157 - Услуги, организация питания<br>\n158 - Корм для животных<br>\n159 - Молочные продукты, мороженое, сыры<br>\n160 - Мясо и мясопродукты, полуфабрикаты, субпродукты<br>\n161 - Масложировая продукция<br>\n162 - Крупы, макароны<br>\n163 - Специи и пищевые добавки<br>\n164 - Оборудование для производства в пищевой промышленности<br>\n165 - Другое<br>\n166 - Рыба и морепродукты<br>\n167 - Сахар, соль<br>\n168 - Табачная продукция<br>\n170 - Спутниковая связь<br>\n171 - Телевидение<br>\n172 - Услуги провайдеров<br>\n173 - Оборудование и средства связи (покупка, аренда)<br>\n174 - Пневмопочта<br>\n175 - Сотовая связь<br>\n176 - Ремонт, монтаж, обслуживание оборудования связи<br>\n177 - Другое<br>\n178 - Системы мониторинга транспортных средств, радары<br>\n179 - Радиосвязь<br>\n180 - Телефонная связь<br>\n182 - Агрохимия, удобрения<br>\n183 - Зоотовары<br>\n184 - Сельскохозяйственные работы, мелиорация<br>\n185 - Цветы, семена, саженцы<br>\n186 - Кормовые добавки, комбикорма<br>\n187 - Продукция сельскохозяйственного комплекса<br>\n188 - Другое<br>\n189 - Сельхозтехника, инвентарь<br>\n190 - Рыбоводство<br>\n191 - Растениеводство<br>\n192 - Птицеводство<br>\n193 - Животноводство<br>\n195 - Заказ и бронирование билетов<br>\n196 - Услуги гостиничных комплексов, курортов, санаториев, домов отдыха<br>\n197 - Услуги туристических фирм<br>\n198 - Оборудование для развлекательного бизнеса, выставочное оборудование<br>\n199 - Товары для отдыха<br>\n200 - Организация праздников и других мероприятий<br>\n201 - Другое<br>\n202 - Спортивное оборудование, инвентарь<br>\n204 - Строительство и ремонт автомобильных и железнодорожных дорог, мостов, тоннелей<br>\n205 - Малые архитектурные формы (работы, материалы)<br>\n206 - Экспертиза проектно-сметной и прочей документации<br>\n207 - Технический надзор и контроль<br>\n208 - Эксплуатация и техническое обслуживание инженерных сооружений<br>\n209 - Недвижимость (строительство)<br>\n210 - Ремонтные работы (внутренний и внешний ремонт, капитальный ремонт)<br>\n211 - Кровельные работы<br>\n212 - Строительное оборудование и инструменты<br>\n213 - Строительство, ремонт и реконструкция инженерных сооружений и специальных объектов<br>\n214 - Недвижимость (аренда)<br>\n215 - Реставрационные работы, реконструкция<br>\n216 - Проектные работы<br>\n217 - Строительство и ремонт объектов теплоснабжения<br>\n218 - Подготовка строительного участка, земляные работы, снос и демонтаж зданий<br>\n219 - Строительство, ремонт и реконструкция линий электропередачи, электротехнических объектов<br>\n220 - Другое<br>\n221 - Асбестотехнические изделия (АТИ)<br>\n222 - Системы отопления, вентиляции, газоснабжения, водоснабжения и канализации (материалы, оборудование, монтаж и обслуживание)<br>\n223 - Управление недвижимостью<br>\n224 - Сантехника, сантехнические материалы<br>\n225 - Недвижимость (покупка, долевое участие в строительстве)<br>\n226 - Экспертиза промышленной безопасности зданий, сооружений и оборудования<br>\n227 - Строительство, ремонт трубопроводов, нефте- газопроводов, объектов водоснабжения и канализации<br>\n228 - Строительные и отделочные материалы, строительные конструкции<br>\n229 - Монтаж окон, дверей, лестниц, материалы и комплектующие к ним<br>\n230 - Содержание авто и ж/д дорог, разметка дорог, установка дорожных знаков<br>\n231 - Услуги дизайна<br>\n232 - Кадастровые работы (техинвентаризация, паспортизация)<br>\n233 - Устройство ограждений, заборов и ворот<br>\n234 - Системы вентиляции и кондиционирования (оборудование, ремонт, монтаж, запчасти)<br>\n236 - Кожевенное сырье, мех<br>\n237 - Оборудование для переработки вторсырья, отходов<br>\n238 - Драгоценные металлы и камни<br>\n239 - Оборудование (горное, дробильное, буровое, нефтепромысловое)<br>\n240 - Каучуки, резина<br>\n241 - Другое<br>\n242 - Минералы, горные породы, сыпучие материалы<br>\n243 - Добыча полезных ископаемых<br>\n244 - Уголь<br>\n245 - Отходы производства, вторсырье<br>\n247 - Продукты переработки<br>\n248 - Топливо печное, судовое, технологическое<br>\n249 - Электроэнергия и теплоэнергия<br>\n250 - ГСМ (горюче-смазочные материалы)<br>\n251 - Оборудование для АЗС и нефтебаз<br>\n252 - Нефтехимия<br>\n253 - Битумы<br>\n254 - Другое<br>\n255 - Энергоаудит<br>\n256 - Нефть<br>\n257 - Твердое топливо<br>\n258 - Газ, газовый конденсат<br>\n336 - Оборудование для автосервиса и автомойки<br>\n337 - Другое<br>\n338 - Железнодорожный транспорт (покупка, обслуживание)<br>\n339 - Автотранспорт (покупка)<br>\n340 - Автотранспорт (обслуживание и ремонт)<br>\n341 - Автозапчасти<br>\n342 - Авиатранспорт (поставка запчастей и обслуживание)<br>\n343 - Авиатранспорт (аренда, найм)<br>\n344 - Автотранспорт (аренда, найм)<br>\n345 - Речной и морской транспорт (покупка)<br>\n346 - Контейнеры и прицепы<br>\n347 - Спецтранспорт (покупка, аренда, поставка запчастей и обслуживание)<br>\n348 - Речной и морской транспорт (обслуживание, поставка запасных частей)<br>\n349 - Автохимия<br>\n350 - Автоаксессуары<br>\n351 - Мото-, велотранспорт (покупка, аренда, обслуживание)<br>\n352 - Шины, диски<br>\n353 - Речной и морской транспорт (аренда, найм)<br>\n354 - Авиатранспорт (покупка)<br>\n356 - Услуги по содержанию кладбищ<br>\n357 - Отлов безнадзорных животных<br>\n358 - Ритуальные товары и услуги<br>\n359 - Другое<br>\n360 - Уборка тротуаров<br>\n361 - Ремонт, монтаж и обслуживание лифтового оборудования<br>\n362 - Санитарное содержание территорий, дезинфекция, дезинсекция, дератизация<br>\n363 - Услуги по захоронению отходов<br>\n364 - Услуги по вывозу твердых и жидких бытовых отходов<br>\n365 - Благоустройство территории, обрезка и посадка деревьев, озеленение территории, ландшафтный дизайн<br>\n366 - Услуги клининговых компаний<br>\n367 - Услуги управляющих компаний<br>\n368 - Услуги аварийно-восстановительных бригад<br>\n370 - Химические материалы, сырье, реактивы<br>\n371 - Другое<br>\n372 - Резинотехнические изделия<br>\n373 - Оборудование для химической промышленности<br>\n374 - Продукция химической промышленности<br>\n375 - Взрывчатые вещества, фейерверки<br>\n376 - Бытовая химия<br>\n377 - Клеи, лаки, краски, эмали<br>\n379 - Очистка сточных вод<br>\n380 - Природоохранная деятельность<br>\n381 - Другое<br>\n382 - Переработка, обезвреживание отходов<br>\n383 - Оборудование очистное, фильтры<br>\n384 - Экологический аудит и исследования<br>\n386 - Вентиляторы<br>\n387 - Другое<br>\n388 - Осветительное оборудование<br>\n389 - Высоковольтная аппаратура<br>\n390 - Источники питания<br>\n391 - Электротермическое, нагревательное и отопительное оборудование<br>\n392 - Кабельно-проводниковая продукция<br>\n393 - Коммутационные изделия<br>\n394 - Электрогенераторы, электродвигатели<br>\n395 - Разное оборудование, комплектующие, cырье и материалы<br>\n396 - Электроснабжение. Генераторные установки. Электростанции<br>\n397 - Измерительная техника и приборы<br>\n398 - Ремонт, монтаж, профилактические работы<br>\n399 - Насосы, компрессоры и их комплектующие<br>\n400 - Трансформаторы, трансформаторные подстанции и реакторы<br>\n401 - Низковольтная аппаратура (НВА)<br>\n",
+              "format": "int32"
+            },
+            "description": "Идентификатор отрасли",
+            "nullable": true
+          },
+          "StrictSearch": {
+            "type": "boolean",
+            "description": "Точный поиск"
+          },
+          "Attachments": {
+            "type": "boolean",
+            "description": "Поиск по документам"
+          },
+          "MaxPriceFrom": {
+            "type": "integer",
+            "description": "Начальная цена От",
+            "format": "int64",
+            "nullable": true
+          },
+          "MaxPriceTo": {
+            "type": "integer",
+            "description": "Начальная цена До",
+            "format": "int64",
+            "nullable": true
+          },
+          "MaxPriceNone": {
+            "type": "boolean",
+            "description": "Включать закупки без НМЦ"
+          },
+          "Advance44": {
+            "type": "boolean",
+            "description": "аванс по 44"
+          },
+          "Advance223": {
+            "type": "boolean",
+            "description": "аванс по 223"
+          },
+          "NonAdvance": {
+            "type": "boolean",
+            "description": "Без аванса для других типов торгов"
+          },
+          "Smp": {
+            "$ref": "#/components/schemas/ApiSearchSmp"
+          },
+          "AllowForeignCurrency": {
+            "type": "boolean",
+            "description": "Включать закупки в валюте"
+          },
+          "PageNumber": {
+            "type": "integer",
+            "description": "Страница",
+            "format": "int32"
+          },
+          "ApplicationDeadlineFrom": {
+            "type": "string",
+            "description": "Дата подачи заявок от",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ApplicationDeadlineTo": {
+            "type": "string",
+            "description": "Дата подачи заявок до",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FavoritesApiModel": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "description": "id избранной закупки",
+            "nullable": true
+          },
+          "MarkerName": {
+            "type": "string",
+            "description": "Название метки, под которой находится закупка",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FavoritesApiModelPagingModel": {
+        "type": "object",
+        "properties": {
+          "PageNumber": {
+            "type": "integer",
+            "description": "Номер страницы",
+            "format": "int32"
+          },
+          "TotalCount": {
+            "type": "integer",
+            "description": "Количество попадающих под запрос",
+            "format": "int64"
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FavoritesApiModel"
+            },
+            "description": "Элементы",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LimitModifiers": {
+        "enum": [
+          "None",
+          "SearchParticipants",
+          "Snippets"
+        ],
+        "type": "string",
+        "x-enum-varnames": [
+          "None",
+          "SearchParticipants",
+          "Snippets"
+        ],
+        "description": "0 - None\n\n1 - SearchParticipants\n\n2 - Snippets\n\n"
+      },
+      "LotPrice": {
+        "type": "object",
+        "properties": {
+          "PositionPrice": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Общая стоимость",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Общая стоимость",
+            "nullable": true
+          },
+          "ItemPrice": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Цена за единицу",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Цена за единицу",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MarkerApiModel": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Название метки избранного",
+            "nullable": true
+          },
+          "Id": {
+            "type": "string",
+            "description": "Идентификатор метки избранного",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Данные о метке в избранном"
+      },
+      "MarkerApiModelPagingModel": {
+        "type": "object",
+        "properties": {
+          "PageNumber": {
+            "type": "integer",
+            "description": "Номер страницы",
+            "format": "int32"
+          },
+          "TotalCount": {
+            "type": "integer",
+            "description": "Количество попадающих под запрос",
+            "format": "int64"
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarkerApiModel"
+            },
+            "description": "Элементы",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrganizerInfo": {
+        "type": "object",
+        "properties": {
+          "FullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "Inn": {
+            "type": "string",
+            "nullable": true
+          },
+          "Kpp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "ApplicationNumber": {
+            "type": "string",
+            "description": "Номер заявки",
+            "nullable": true
+          },
+          "ApplicationPrice": {
+            "oneOf": [
+              {
+                "type": "number",
+                "description": "Предложенная цена",
+                "format": "double",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Предложенная цена",
+            "nullable": true
+          },
+          "ApplicationDate": {
+            "type": "string",
+            "description": "Дата подачи заявки",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ReviewResult": {
+            "type": "boolean",
+            "description": "Результат рассмотрения заявки",
+            "nullable": true
+          },
+          "FoundFromDocuments": {
+            "type": "boolean",
+            "description": "Возможный участник закупки, ИНН найден в документации к закупке"
+          },
+          "IsContractSigned": {
+            "type": "boolean",
+            "description": "Поставщик",
+            "nullable": true
+          },
+          "IsWinner": {
+            "type": "boolean",
+            "description": "Участник победил",
+            "nullable": true
+          },
+          "NonAdmittedReason": {
+            "type": "string",
+            "description": "Причина несоответствия",
+            "nullable": true
+          },
+          "Inn": {
+            "type": "string",
+            "description": "ИНН",
+            "nullable": true
+          },
+          "Kpp": {
+            "type": "string",
+            "description": "КПП",
+            "nullable": true
+          },
+          "Name": {
+            "type": "string",
+            "description": "Имя организации",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Наименование",
+            "nullable": true
+          },
+          "Quantity": {
+            "type": "number",
+            "description": "Количество",
+            "format": "double",
+            "nullable": true
+          },
+          "Okei": {
+            "type": "string",
+            "description": "Единица измерения",
+            "nullable": true
+          },
+          "Okpd2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Код ОКПД2",
+            "nullable": true
+          },
+          "Ktrus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Код КТРУ",
+            "nullable": true
+          },
+          "Okved2s": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiReferenceModel"
+            },
+            "description": "Код ОКВЭД",
+            "nullable": true
+          },
+          "Price": {
+            "$ref": "#/components/schemas/LotPrice"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Protocol": {
+        "type": "object",
+        "properties": {
+          "EtpProtocolLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на протокол в ЭТП",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на протокол в ЭТП",
+            "nullable": true
+          },
+          "ProtocolNumber": {
+            "type": "string",
+            "description": "Номер протокола",
+            "nullable": true
+          },
+          "ProtocolType": {
+            "type": "string",
+            "description": "Тип протокола",
+            "nullable": true
+          },
+          "ProtocolTypeName": {
+            "type": "string",
+            "description": "Расшифровка типа протокола",
+            "nullable": true
+          },
+          "EisProtocolLink": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на протокол в ЕИС",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на протокол в ЕИС",
+            "nullable": true
+          },
+          "ProtocolPublishDate": {
+            "type": "string",
+            "description": "Дата публикации протокола",
+            "format": "date-time",
+            "nullable": true
+          },
+          "AbandonedReason": {
+            "type": "string",
+            "description": "Причина отклонения",
+            "nullable": true
+          },
+          "Docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiAttachmentModel"
+            },
+            "description": "Документы",
+            "nullable": true
+          },
+          "Participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            },
+            "description": "Участники",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PurchaseResults": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "description": "Идентификатор закупки",
+            "nullable": true
+          },
+          "Link": {
+            "type": "string",
+            "description": "Ссылка на закупку в Контур Закупки",
+            "format": "uri",
+            "nullable": true
+          },
+          "Protocols": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Protocol"
+            },
+            "description": "Протоколы",
+            "nullable": true
+          },
+          "ContractProjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractProject"
+            },
+            "description": "Проекты контракта",
+            "nullable": true
+          },
+          "Contracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contract"
+            },
+            "description": "Контракты/договоры",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Requirement": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Content": {
+            "type": "string",
+            "nullable": true
+          },
+          "AddRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddRequirement"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Restriction": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Content": {
+            "type": "string",
+            "nullable": true
+          },
+          "AddRestrictions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddRestriction"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResultItem": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "description": "Ид закупки",
+            "nullable": true
+          },
+          "NotificationNumber": {
+            "type": "string",
+            "description": "Номер закупки на ЭТП",
+            "nullable": true
+          },
+          "OrderName": {
+            "type": "string",
+            "description": "Название закупки",
+            "nullable": true
+          },
+          "NotificationTypeDesc": {
+            "type": "string",
+            "description": "Способ отбора",
+            "nullable": true
+          },
+          "TypeOfTrading": {
+            "$ref": "#/components/schemas/ApiSearchLaw"
+          },
+          "MaxPrice": {
+            "type": "number",
+            "description": "НМЦ",
+            "format": "double",
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "description": "Валюта",
+            "nullable": true
+          },
+          "EpUri": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Ссылка на ЭТП",
+                "format": "uri",
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/BlurredApiSchema"
+              }
+            ],
+            "description": "Ссылка на ЭТП",
+            "nullable": true
+          },
+          "Link": {
+            "type": "string",
+            "description": "Ссылка на КЗ",
+            "format": "uri",
+            "nullable": true
+          },
+          "ApplicationDeadline": {
+            "type": "string",
+            "description": "Дата окончания подачи заявок",
+            "format": "date-time"
+          },
+          "IsCancelled": {
+            "type": "boolean",
+            "description": "Закупка отменена"
+          },
+          "CreateDate": {
+            "type": "string",
+            "description": "Дата публикации",
+            "format": "date-time"
+          },
+          "DeliveryPlaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Места поставки",
+            "nullable": true
+          },
+          "Inns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ИНН заказчиков и организаторов",
+            "nullable": true
+          },
+          "Participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchParticipant"
+            },
+            "description": "Участники (Доступно для тарифа \"Поиск 2.0\")",
+            "nullable": true
+          },
+          "Customers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiSearchCustomer"
+            },
+            "description": "Заказчики",
+            "nullable": true
+          },
+          "CommissionDeadline": {
+            "type": "string",
+            "description": "Дата подведения итогов",
+            "format": "date-time"
+          },
+          "IsAbandoned": {
+            "type": "boolean",
+            "description": "Закупка не состоялась"
+          },
+          "IsPlanning": {
+            "type": "boolean",
+            "description": "Закупка планируется"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResultItemPagingModel": {
+        "type": "object",
+        "properties": {
+          "PageNumber": {
+            "type": "integer",
+            "description": "Номер страницы",
+            "format": "int32"
+          },
+          "TotalCount": {
+            "type": "integer",
+            "description": "Количество попадающих под запрос",
+            "format": "int64"
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/SearchResultItem"
+                },
+                {
+                  "$ref": "#/components/schemas/SearchResultItemWithSnippets"
+                }
+              ]
+            },
+            "description": "Элементы",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResultItemWithSnippets": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchResultItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "Snippets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Сниппеты",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Supplier": {
+        "type": "object",
+        "properties": {
+          "Address": {
+            "type": "string",
+            "description": "Адрес",
+            "nullable": true
+          },
+          "Email": {
+            "type": "string",
+            "description": "Электронная почта",
+            "nullable": true
+          },
+          "Phone": {
+            "type": "string",
+            "description": "Телефон",
+            "nullable": true
+          },
+          "Inn": {
+            "type": "string",
+            "description": "ИНН",
+            "nullable": true
+          },
+          "Kpp": {
+            "type": "string",
+            "description": "КПП",
+            "nullable": true
+          },
+          "Name": {
+            "type": "string",
+            "description": "Имя организации",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TenderRequirements": {
+        "type": "object",
+        "properties": {
+          "Requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
+            },
+            "nullable": true
+          },
+          "Privileges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "Restrictions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Restriction"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "PortalApiKey": {
+        "type": "apiKey",
+        "name": "X-Kontur-Apikey",
+        "in": "header"
+      }
+    }
+  }
+}
